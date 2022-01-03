@@ -12,18 +12,15 @@ namespace LexChipReset_v2.NewFolder
     {
         private string CurrentDirectory
         {
-            get;
-            set;
+            get; set;
         }
         private string FilePath
         {
-            get;
-            set;
+            get; set;
         }
         private string FileName
         {
-            get;
-            set;
+            get; set;
         }
         public Logger()
         {
@@ -36,7 +33,7 @@ namespace LexChipReset_v2.NewFolder
         {
             using StreamWriter streamwrt = File.AppendText(FilePath);
             streamwrt.Write("\nLog:");
-            streamwrt.WriteLine("{0} {1}", DateTime.Now.ToShortTimeString(), DateTime.Now.ToLongDateString());
+            streamwrt.WriteLine("{0} : {1}", DateTime.Now.ToShortTimeString(), DateTime.Now.ToLongDateString()) ;
             streamwrt.WriteLine("{0}", Messsage);
             streamwrt.WriteLine("#############################################################");
         }

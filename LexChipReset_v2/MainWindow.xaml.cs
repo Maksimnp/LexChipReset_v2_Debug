@@ -144,7 +144,7 @@ namespace LexChipReset_v2
                 MessageBox.LabelEvent.Content = "ERROR";
                 MessageBox.Show();
                 var logger = new Logger();
-                logger.Log("Exeption! " + ex);
+                logger.Log("Exeption: " + ex);
             }
         }
         //END SAVE CONSOLE LOG EVENT
@@ -176,7 +176,7 @@ namespace LexChipReset_v2
                 MessageBox.Show();
                 Debug_ListBox.Items.Add("First you need\nto connect the com port!");
                 var logger = new Logger();
-                logger.Log("Exeption! " + ex);
+                logger.Log("Exeption: " + ex);
             }
         }
         //END INPUT TEXT FROM ENTER
@@ -204,7 +204,7 @@ namespace LexChipReset_v2
                 MessageBox.LabelEvent.Content = "ERROR";
                 MessageBox.Show();
                 var logger = new Logger();
-                logger.Log("Exeption! " + ex);
+                logger.Log("Exeption: " + ex);
             }
         }
         //END CLEAN CONSOLE BUTTON EVENT
@@ -258,7 +258,7 @@ namespace LexChipReset_v2
                 MessageBox.LabelEvent.Content = "ERROR";
                 MessageBox.Show();
                 var logger = new Logger();
-                logger.Log("Exeption! " + ex);
+                logger.Log("Exeption: " + ex);
                 serialport.Close();
                 }
             }
@@ -287,7 +287,7 @@ namespace LexChipReset_v2
                 MessageBox.LabelEvent.Content = "ERROR";
                 MessageBox.Show();
                 var logger = new Logger();
-                logger.Log("Exeption! " + ex);
+                logger.Log("Exeption: " + ex);
             }
         }
         //END CONNECT TO COM PORT EVENT
@@ -325,7 +325,7 @@ namespace LexChipReset_v2
                 MessageBox.Show();
                 Debug_ListBox.Items.Add("Data recived error");
                 var logger = new Logger();
-                logger.Log("Exeption! " + ex);
+                logger.Log("Exeption: " + ex);
                 serialport.Close();
             }
         }
