@@ -15,7 +15,6 @@
     <Window.DataContext>
         <viewmodel:MainViewModel/>
     </Window.DataContext>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height = "25"/>
@@ -35,7 +34,6 @@
                 <Label Content="LexmarkCR"
                        Foreground="Gray"
                        FontWeight="SemiBold" Margin="0,0,-10,0"/>
-
                 <StackPanel HorizontalAlignment="Right"
                     Orientation="Horizontal">
                     <Button Width="20" Height="20"
@@ -66,13 +64,7 @@
                 <RowDefinition Height="60"/>
             </Grid.RowDefinitions>
             <Border BorderBrush="#FF252525" BorderThickness="1" HorizontalAlignment="Center" Height="98" Margin="0,10,0,0" Grid.RowSpan="3" VerticalAlignment="Top" Width="216"/>
-
-
-
             <Border BorderBrush="#FF252525" BorderThickness="1" HorizontalAlignment="Center" Height="83" Margin="0,382,0,0" Grid.Row="2" VerticalAlignment="Top" Width="216"/>
-
-
-
             <Button x:Name="ReadChip_Button" Content="Read Chip" HorizontalAlignment="Center" Height="30" VerticalAlignment="Top" Width="204" Background="#FF252525" BorderBrush="#FF2F3136" Margin="0,390,0,0" Grid.Row="2" FontWeight="Bold" Foreground="#FFBCCADA" Click="ReadChip_Button_Click"/>
             <Button x:Name="ProgramChip_Button" Content="Program Chip" HorizontalAlignment="Center" Height="30" VerticalAlignment="Top" Width="204" Background="#FF252525" BorderBrush="#FF2F3136" Margin="0,425,0,0" Grid.Row="2" FontWeight="Bold" Foreground="#FFBCCADA" Click="ProgramChip_Button_Click"/>
             <ComboBox x:Name="COMPort_Combobox" HorizontalAlignment="Left" Margin="12,18,0,0" VerticalAlignment="Top" Width="82" BorderBrush="#00000000" Background="{x:Null}" Height="22" Foreground="#FF080808" Grid.RowSpan="2" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
@@ -85,9 +77,6 @@
             <Label x:Name="TypeLabel" Content="" HorizontalAlignment="Left" Height="28" Margin="47,10,0,0" VerticalAlignment="Top" Width="168" FontWeight="Bold" Foreground="#FFBCCADA" Grid.Row="3"/>
             <ListBox x:Name="Debug_ListBox" HorizontalAlignment="Center" Height="314" Grid.Row="2" VerticalAlignment="Top" Width="216" d:ItemsSource="{d:SampleData ItemCount=5}" Background="Transparent" Foreground="#FFBCCADA" BorderBrush="#FF252525" FontWeight="Bold" Margin="0,63,0,0"/>
             <Label x:Name="Connection_Label" Content="" HorizontalAlignment="Center" Height="24" Margin="0,25,0,0" Grid.Row="2" VerticalAlignment="Top" Width="140" Foreground="#FFBCCADA" FontWeight="Bold"/>
-
-
-
         </Grid>
         <Button x:Name="ClearConsole_Button" Content="⌫" Background="#FF252525" BorderBrush="#FF2F3136" Margin="476,532,0,0" Grid.Row="1" FontWeight="Bold" Foreground="#FFBCCADA" RenderTransformOrigin="0.5,0.5" Grid.Column="1" HorizontalAlignment="Left" Width="31" Height="39" VerticalAlignment="Top" Click="ClearConsole_Button_Click">
             <Button.RenderTransform>

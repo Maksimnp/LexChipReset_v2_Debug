@@ -1,5 +1,5 @@
-﻿using Microsoft.Win32;
-using Serilog;
+﻿using LexChipReset_v2.NewFolder;
+using Microsoft.Win32;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -21,41 +21,30 @@ namespace LexChipReset_v2
     {
         private readonly SerialPort serialport;
         private readonly IContainer components;
-        private string _dataForSend;
-        private string _writeStatus;
-      
-        private readonly string DataForSend1;
-        private string DataForSend2;
-        private string DataForSend3;
-        private string DataForSend4;
-        private string DataForSend5;
+        private string SendCommandStr;
         private int _readAll;
         private int _next;
+        readonly Box MessageBox = new();
         private readonly string[] Hex;
         private string Tag1 { get; set; }
-        private string Tag2 { get; }
-        private string Tag3 { get; }
-        private string Tag4 { get; }
-        private string Tag5 { get; }
-        private string Tag6 { get; }
-        private string Tag7 { get; }
-        private string Tag8 { get; }
-        private string Tag9 { get; }
-        private string Tag10 { get; }
-        private string Tag11 { get; }
-        private string Tag12 { get; }
-        private string Tag13 { get; }
-        private string Tag14 { get; }
-        private string Tag15 { get; }
-        private string Tag16 { get; }
-        private string Tag17 { get; }
-
-        private string Type;
-        private string DataForSend6;
-        private string DataForSend7;
-        private string DataForSend8;
-        private string SendCommandStr;
-
+        private string Tag2 { get; set; }
+        private string Tag3 { get; set; }
+        private string Tag4 { get; set; }
+        private string Tag5 { get; set; }
+        private string Tag6 { get; set; }
+        private string Tag7 { get; set; }
+        private string Tag8 { get; set; }
+        private string Tag9 { get; set; }
+        private string Tag10 { get; set; }
+        private string Tag11 { get; set; }
+        private string Tag12 { get; set; }
+        private string Tag13 { get; set; }
+        private string Tag14 { get; set; }
+        private string Tag15 { get; set; }
+        private string Tag16 { get; set; }
+        private string Tag17 { get; set; }
+        private string Type { get; set; }
+       
         public MainWindow()
         {
             InitializeComponent();
@@ -73,17 +62,9 @@ namespace LexChipReset_v2
             ClearConsole_Button.IsEnabled = false;
             SaveLog_Button.IsEnabled = false;
 
-            //START LOG EVENT
-            Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.File("logs/LOG.txt", rollingInterval: RollingInterval.Hour)
-            .CreateLogger();
-            //END LOG EVENT
-
-            //START SET ARRAY DATA (Создание динамического массива и инициализация строк)
+            //START SET ARRAY DATA 
             string[] strArray = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
             Hex = strArray;
-            _writeStatus = "";
             strArray[1] = "90";
             strArray[2] = "A0";
             strArray[3] = "B0";
@@ -111,6 +92,7 @@ namespace LexChipReset_v2
             //END SET ARRAY DATA
         }
 
+        //START TITLEBAR BUTTON EVENT
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -118,16 +100,15 @@ namespace LexChipReset_v2
                 DragMove();
             }
         }
-
         private void ButtonMinimaze_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
         }
-
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
+        //END TITLEBAR BUTTON EVENT
 
         //START SAVE CONSOLE LOG EVENT 
         private void SaveLog_Button_Click(object sender, EventArgs e)
@@ -136,7 +117,9 @@ namespace LexChipReset_v2
             {
                 if (MainListBox.Items.Count is 0)
                 {
-                    MessageBox.Show("Nothing to Save, Console is Empty");
+                    MessageBox.SetText("Nothing to Save, Console is Empty");
+                    MessageBox.LabelEvent.Content = "Information";
+                    MessageBox.Show();
                 }
                 else
                 {
@@ -149,14 +132,19 @@ namespace LexChipReset_v2
                     {
                         File.WriteAllText(dialog.FileName, allItems, Encoding.UTF8);
                         Debug_ListBox.Items.Clear();
-                        Debug_ListBox.Items.Add("CONSOLE LOG SAVED...");
+                        Debug_ListBox.Items.Add("Console log saved");
                     }
-                    Log.Information("CONSOLE LOG SAVED...");
+                    var logger = new Logger();
+                    logger.Log("User saves console log");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $@"Exeption: {ex}");
+                MessageBox.SetText(ex.Message);
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
+                var logger = new Logger();
+                logger.Log("Exeption! " + ex);
             }
         }
         //END SAVE CONSOLE LOG EVENT
@@ -164,7 +152,9 @@ namespace LexChipReset_v2
         //START HELP BUTTON
         private void Help_Button_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Example: 1501400111223344556677889911223344556677\n15 - command type(15 write command, 14 command for reading data)\n01 - type of cartridge toner or imaging drum(01 toner cartridge, 05 imaging drum)\n4001 - address for recording 11223344556677889911223344556677 - data 16 of 2 in hex");
+            MessageBox.SetText("Example: 1501400111223344556677889911223344556677\n15 - command type(15 write command, 14 command for reading data)\n01 - type of cartridge toner or imaging drum(01 toner cartridge, 05 imaging drum)\n4001 - address for recording\n11223344556677889911223344556677 - data 16 of 2 in hex");
+            MessageBox.LabelEvent.Content = "HELP";
+            MessageBox.Show();
         }
         //END HELP BUTTON
 
@@ -181,8 +171,12 @@ namespace LexChipReset_v2
             }
             catch (Exception ex)
             {
+                MessageBox.SetText("First you need to connect the com port!\n" + ex.Message);
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
                 Debug_ListBox.Items.Add("First you need\nto connect the com port!");
-                Log.Error(ex, $@"Exeption: {ex}");
+                var logger = new Logger();
+                logger.Log("Exeption! " + ex);
             }
         }
         //END INPUT TEXT FROM ENTER
@@ -194,18 +188,23 @@ namespace LexChipReset_v2
             {
                 if (MainListBox.Items.Count is 0)
                 {
-                    MessageBox.Show("Nothing to clean!");
+                    MessageBox.SetText("Nothing to clean!");
+                    MessageBox.LabelEvent.Content = "Information";
+                    MessageBox.Show();
                 }
                 else
                 {
                     MainListBox.Items.Clear();
-                    Debug_ListBox.Items.Add("CONSOLE CLEANED!");
-                    Log.Information("CONSOLE CLEANED...");
+                    Debug_ListBox.Items.Add("Console cleared");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $@"Exeption: {ex}");
+                MessageBox.SetText(ex.Message);
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
+                var logger = new Logger();
+                logger.Log("Exeption! " + ex);
             }
         }
         //END CLEAN CONSOLE BUTTON EVENT
@@ -218,15 +217,22 @@ namespace LexChipReset_v2
                 if (!serialport.IsOpen)
                 {
                     Connect();
-                    Log.Information("CONNECT TO {0}.", COMPort_Combobox.SelectedItem.ToString());
+                }
+                else
+                {
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), $@"CHECK WHETHER PORT IS SELECTED!");
-                Log.Error(ex, $@"Exeption: {ex}");
+                MessageBox.SetText(@$"COM port not selected!");
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
+                Debug_ListBox.Items.Add(@$"COM port not selected!");
+                var logger = new Logger();
+                logger.Log("User dont select COM Port!" + ex);
             }
         }
+
         private void Connect()
         {
             try
@@ -244,17 +250,18 @@ namespace LexChipReset_v2
                 serialport.Open();
                 Connection_Label.Content = $@"CONNECTED TO {serialport.PortName}";
                 Debug_ListBox.Items.Clear();
-                Debug_ListBox.Items.Add("PROGRAM INITIALIZATION...");
-                Log.Information("CONNECT TO {0}.", COMPort_Combobox.SelectedItem.ToString());
-
+                Debug_ListBox.Items.Add("PROGRAM INITIALIZATION");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($@"Exception: {ex}");
-                Log.Error(ex, $@"Exeption: {ex}");
+                MessageBox.SetText(ex.Message);
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
+                var logger = new Logger();
+                logger.Log("Exeption! " + ex);
                 serialport.Close();
+                }
             }
-        }
 
         private void RefreshCOMPort_Button_Click(object sender, EventArgs e)
         {
@@ -272,18 +279,21 @@ namespace LexChipReset_v2
                     ClearConsole_Button.IsEnabled = false;
                     SaveLog_Button.IsEnabled = false;
                 }
-                Log.Information("COM PORTS UPDATED...");
-                Debug_ListBox.Items.Add("COM PORTS UPDATED...");
+                Debug_ListBox.Items.Add("COM ports updated");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $@"Exeption: {ex}");
+                MessageBox.SetText(ex.Message);
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
+                var logger = new Logger();
+                logger.Log("Exeption! " + ex);
             }
         }
         //END CONNECT TO COM PORT EVENT
 
         //START PROGRESSBAR EVENT
-        private async void ReadStatus_ProgressBar_OnLoaded(object sender, RoutedEventArgs e)
+        private async Task<ProgressBar> ReadStatus_ProgressBar_OnLoaded(object sender, RoutedEventArgs e)
         {
             while (true)
             {
@@ -294,11 +304,12 @@ namespace LexChipReset_v2
                     await Task.Delay(50);
                     ReadStatus_ProgressBar.Value = i;
                 }
+                return ReadStatus_ProgressBar;
             }
         }
         //END PROGRESSBAR EVENT
 
-        //START DATA RECEIVED EVENT (Работа асинхронного делегата)
+        //START DATA RECEIVED EVENT
         private void serialportDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
@@ -309,8 +320,12 @@ namespace LexChipReset_v2
             }
             catch (Exception ex)
             {
-                Debug_ListBox.Items.Add("DATA RECEIVED ERROR");
-                Log.Error(ex, $@"Exeption: {ex}");
+                MessageBox.SetText(ex.Message);
+                MessageBox.LabelEvent.Content = "ERROR";
+                MessageBox.Show();
+                Debug_ListBox.Items.Add("Data recived error");
+                var logger = new Logger();
+                logger.Log("Exeption! " + ex);
                 serialport.Close();
             }
         }
@@ -330,189 +345,45 @@ namespace LexChipReset_v2
             }
             _readAll = 1;
         }
-
         private void ProgramChip_Button_Click(object sender, EventArgs e)
         {
-            //try
-            //{
-            //    MainListBox.SelectedItem = 0x35;
-            //    int num = 0;
-            //    int num2 = 0;
-            //    string source = "";
-            //    string text = new string(MainListBox.ItemStringFormat.Reverse().ToArray()).Remove(0, 2);
-            //    for (int i = 0; i <= text.Length; i++)
-            //    {
-            //        if (num >= 4)
-            //        {
-            //            i = text.Length;
-            //        }
-            //        else if (text.ElementAt<char>(i).ToString() != " ")
-            //        {
-            //            num2++;
-            //            source += text.ElementAt(i).ToString();
-            //        }
-            //        else
-            //        {
-            //            if (num2 == 1)
-            //            {
-            //                source += "0";
-            //            }
-            //            num++;
-            //            num2 = 0;
-            //        }
-            //    }
-            //    string[] strArray = new string[] { "15", Type, "2000", Tag1, new string(source.Reverse().ToArray()) };
-            //    DataForSend2 = string.Concat(strArray);
-            //    _writeStatus = "4000";
-            //    MainListBox.SelectedValue = 0x37;
-            //    text = MainListBox.Name;
-            //    num = 0;
-            //    num2 = 0;
-            //    string str3 = "";
-            //    for (int j = 0; j <= text.Length; j++)
-            //    {
-            //        if (num >= 10)
-            //        {
-            //            j = text.Length;
-            //        }
-            //        else if (text.ElementAt(j).ToString() != " ")
-            //        {
-            //            num2++;
-            //            str3 += text.ElementAt(j).ToString();
-            //        }
-            //        else
-            //        {
-            //            if (num2 == 1)
-            //            {
-            //                str3 = str3.Insert(str3.Length - 1, "0");
-            //            }
-            //            num++;
-            //            num2 = 0;
-            //        }
-            //    }
-            //    strArray = new string[] { "15", Type, "4000", str3, Tag2 };
-            //    DataForSend3 = string.Concat(strArray);
-            //    MainListBox.SelectedValue = 0x3e;
-            //    num = 0;
-            //    num2 = 0;
-            //    string? str4 = "";
-            //    text = new string(MainListBox.ItemStringFormat.Reverse<char>().ToArray<char>()).Remove(0, 2);
-            //    for (int k = 0; k <= text.Length; k++)
-            //    {
-            //        if (num >= 2)
-            //        {
-            //            k = text.Length;
-            //        }
-            //        else if (text.ElementAt(k).ToString() != " ")
-            //        {
-            //            num2++;
-            //            str4 += text.ElementAt(k).ToString();
-            //        }
-            //        else
-            //        {
-            //            if (num2 == 1)
-            //            {
-            //                str4 += "0";
-            //            }
-            //            num++;
-            //            num2 = 0;
-            //        }
-            //    }
-
-            //    strArray = new string[] { "15", Type, "B000", Tag4, new string(str4.Reverse().ToArray()) };
-            //    DataForSend5 = string.Concat(strArray);
-            //    MainListBox.SelectedValue = 0x40;
-            //    num = 0;
-            //    num2 = 0;
-            //    string? str5 = "";
-            //    text = new string(MainListBox.ItemStringFormat.Reverse<char>().ToArray<char>()).Remove(0, 2);
-            //    for (int m = 0; m <= text.Length; m++)
-            //    {
-            //        if (num >= 7)
-            //        {
-            //            m = text.Length;
-            //        }
-            //        else if (text.ElementAt(m).ToString() != " ")
-            //        {
-            //            num2++;
-            //            str5 += text.ElementAt(m).ToString();
-            //        }
-            //        else
-            //        {
-            //            if (num2 == 1)
-            //            {
-            //                str5 += "0";
-            //            }
-            //            num++;
-            //            num2 = 0;
-            //        }
-            //    }
-
-            //    DataForSend6 += new string(str5.Reverse().ToArray());
-            //    MainListBox.SelectedValue = 0x41;
-            //    text = MainListBox.ToString();
-            //    num = 0;
-            //    num2 = 0;
-            //    string? str6 = "";
-            //    for (int n = 0; n <= text.Length; n++)
-            //    {
-            //        if (num >= 5)
-            //        {
-            //            n = text.Length;
-            //        }
-            //        else if (text.ElementAt(n).ToString() != " ")
-            //        {
-            //            num2++;
-            //            str6 += text.ElementAt(n).ToString();
-            //        }
-            //        else
-            //        {
-            //            if (num2 == 1)
-            //            {
-            //                str6 = str6.Insert(str6.Length - 1, "0");
-            //            }
-            //            num++;
-            //            num2 = 0;
-            //        }
-            //    }
-
-            //    text = (str6 + Tag6).Remove(0, 6);
-            //    DataForSend7 = "000000" + text;
-            //    MainListBox.SelectedValue = 0x44;
-            //    num = 0;
-            //    num2 = 0;
-            //    string? str7 = "";
-            //    text = new string(MainListBox.ItemStringFormat.Reverse<char>().ToArray<char>()).Remove(0, 2);
-            //    for (int num8 = 0; num8 <= text.Length; num8++)
-            //    {
-            //        if (num >= 2)
-            //        {
-            //            num8 = text.Length;
-            //        }
-            //        else if (text.ElementAt(num8).ToString() != " ")
-            //        {
-            //            num2++;
-            //            str7 += text.ElementAt(num8).ToString();
-            //        }
-            //        else
-            //        {
-            //            if (num2 == 1)
-            //            {
-            //                str7 += "0";
-            //            }
-            //            num++;
-            //            num2 = 0;
-            //        }
-            //    }
-            //    DataForSend8 += new string(str7.Reverse().ToArray());
-            //    serialport.WriteLine(DataForSend2);
-            //}
-            //catch (Exception ex)
-            //{
-            //    Debug_ListBox.Items.Clear();
-            //    Debug_ListBox.Items.Add("DATA RECEIVED ERROR!\nSEE LOG!");
-            //    Log.Error(ex, $@"Exeption: {ex}");
-            //}
+            
+            if (Type == "05")
+            {
+                serialport.WriteLine("15" + Type + Tag10);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag11);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag12);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag13);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag14);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag15);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag16);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag17);
+            }
+            else 
+            {
+                serialport.WriteLine("15" + Type + Tag1);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag2);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag3);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag4);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag5);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag6);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag7);
+                Thread.Sleep(1000);
+                serialport.WriteLine("15" + Type + Tag8);
+            }
         }
         //END READ AND PROGRAMMING CHIP EVENT
 
@@ -563,11 +434,11 @@ namespace LexChipReset_v2
                     }
                     index++;
                 }
-                Debug_ListBox.Items.Add("OK!");
                 ReadChip_Button.IsEnabled = true;
                 ProgramChip_Button.IsEnabled = true;
                 ClearConsole_Button.IsEnabled = true;
                 SaveLog_Button.IsEnabled = true;
+                Debug_ListBox.Items.Add("OK!");
             }
             //END PROGRAM INITIALIZATION EVENT
 
@@ -576,7 +447,6 @@ namespace LexChipReset_v2
             {
                 return;
             }
-
             _next++;
             if (_readAll == 1)
             {
@@ -604,7 +474,6 @@ namespace LexChipReset_v2
                 }
                 else
                 {
-                    ReadStatus_ProgressBar.Value = 35;
                     _next = 0;
                     _readAll = 3;
                     MainListBox.Items.Add("06");
@@ -617,13 +486,11 @@ namespace LexChipReset_v2
             {
                 if (_next <= 15)
                 {
-                    ReadStatus_ProgressBar.Value = 50;
                     serialport.WriteLine("14" + Type + Hex[_next] + "06");
                     ReadStatus_ProgressBar.Value = 55;
                 }
                 else
                 {
-                    ReadStatus_ProgressBar.Value = 60;
                     _next = 0;
                     _readAll = 4;
                     MainListBox.Items.Add("00");
@@ -636,13 +503,11 @@ namespace LexChipReset_v2
             {
                 if (_next <= 15)
                 {
-                    ReadStatus_ProgressBar.Value = 70;
                     serialport.WriteLine("14" + Type + Hex[_next] + "00");
                     ReadStatus_ProgressBar.Value = 75;
                 }
                 else
                 {
-                    ReadStatus_ProgressBar.Value = 80;
                     _next = 0;
                     _readAll = 5;
                     MainListBox.Items.Add("01");
@@ -664,158 +529,14 @@ namespace LexChipReset_v2
                     _readAll = 0;
                     ReadStatus_ProgressBar.Value = 100;
                     Debug_ListBox.Items.Add("READING COMPLETE!");
-                    MessageBox.Show("Reading complete!\nTo start programming the chip, press button 'Program Chip' !");
-                    ReadStatus_ProgressBar.Value = 0;
+                    MessageBox.SetText("Reading complete! To start programming the chip,\npress button 'Program Chip' !");
+                    MessageBox.LabelEvent.Content = "INFORMATION";
+                    MessageBox.Show();
                     TextBlockProgrBar.Visibility = Visibility.Collapsed;
+                    ReadStatus_ProgressBar.Value = 0;
                 }
             }
             //END READ CHIP EVENT
-
-            //START PROGRAMMING CHIP EVENT
-            if (command.Contains("writeok") && (_writeStatus == "4000"))
-            {
-                _writeStatus = "5000";
-                serialport.WriteLine(DataForSend1);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "5000"))
-            {
-                _dataForSend = "15" + Type + "5000" + Tag3;
-                _writeStatus = "6000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "6000"))
-            {
-                _dataForSend = "15" + Type + "6000" + Tag3;
-                _writeStatus = "7000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "7000"))
-            {
-                _dataForSend = "15" + Type + "7000" + Tag3;
-                _writeStatus = "8000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "8000"))
-            {
-                _dataForSend = "15" + Type + "8000" + Tag3;
-                _writeStatus = "9000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "9000"))
-            {
-                _dataForSend = "15" + Type + "9000" + Tag3;
-                _writeStatus = "A000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "A000"))
-            {
-                _dataForSend = "15" + Type + "A000" + Tag3;
-                _writeStatus = "B000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "B000"))
-            {
-                _writeStatus = "C000";
-                serialport.WriteLine(DataForSend2);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "C000"))
-            {
-                _dataForSend = "15" + Type + "C000" + Tag3;
-                _writeStatus = "D000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "D000"))
-            {
-                _dataForSend = "15" + Type + "D000" + DataForSend3;
-                _writeStatus = "E000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "E000"))
-            {
-                _dataForSend = "15" + Type + "E000" + DataForSend4;
-                _writeStatus = "F000";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "F000"))
-            {
-                _dataForSend = "15" + Type + "F000" + Tag3;
-                _writeStatus = "0001";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "0001"))
-            {
-                _dataForSend = "15" + Type + "0001" + DataForSend5;
-                _writeStatus = "1001";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "1001"))
-            {
-                _dataForSend = "15" + Type + "1001" + Tag3;
-                _writeStatus = "2001";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "2001"))
-            {
-                _dataForSend = "15" + Type + "2001" + DataForSend3;
-                _writeStatus = "3001";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "3001"))
-            {
-                _dataForSend = "15" + Type + "3001" + DataForSend4;
-                _writeStatus = "4001";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "4001"))
-            {
-                _dataForSend = "15" + Type + "4001" + Tag3;
-                _writeStatus = "5001";
-                serialport.WriteLine(_dataForSend);
-                Thread.Sleep(1500);
-            }
-
-            if (command.Contains("writeok") && (_writeStatus == "4001"))
-            {
-                _dataForSend = "15" + Type + "4001" + DataForSend5;
-                _writeStatus = "";
-                serialport.WriteLine(_dataForSend);
-                DataForSend3 = "";
-                DataForSend4 = "";
-                DataForSend5 = "";
-                //END PROGRAMMING CHIP EVENT
-            }
         }
     }
 }
