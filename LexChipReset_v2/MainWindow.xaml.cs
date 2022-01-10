@@ -534,9 +534,9 @@ namespace LexChipReset_v2
                     MessageBox.Show();
                     TextBlockProgrBar.Visibility = Visibility.Collapsed;
                     ReadStatus_ProgressBar.Value = 0;
+                //END READ CHIP EVENT
                 }
             }
-            //END READ CHIP EVENT
         }
     }
 }
